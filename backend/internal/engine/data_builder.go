@@ -280,6 +280,8 @@ func (b *TemplateDataBuilder) Build(ctx context.Context, posts []domain.Post, co
 			}
 		}
 	}
+	// 注意：未配置域名时 globalDomain 保持空字符串，
+	// 模板中需要用 href="/" 作为首页链接的兜底。
 
 	data := &template.TemplateData{
 		ThemeConfig: template.ThemeConfigView{

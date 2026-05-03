@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -74,8 +75,8 @@ func (p *DirProvider) Deploy(ctx context.Context, outputDir string, setting *dom
 	return nil
 }
 
-// rewriteHtmlPathsBasePath 遍历目标目录中的所有 HTML 文件，
-// 将 href="/xxx" 和 src="/xxx" 替换为 href="/basePath/xxx"（绝对路径前缀模式，适用于 CDN 子目录）
+// rewriteHtmlPathsBasePath 遍历目标目录中的所有 HTML 和 JS 文件，
+// 将 href="/xxx" 和 src="/xxx"（HTML）以及 '/xxx' 和 "/xxx"（JS）替换为带 basePath 前缀的路径
 func rewriteHtmlPathsBasePath(rootDir, basePath string) (int, error) {
 	// 规范化 basePath：确保以 / 开头且以 / 结尾
 	basePath = strings.TrimPrefix(basePath, "/")
@@ -87,7 +88,12 @@ func rewriteHtmlPathsBasePath(rootDir, basePath string) (int, error) {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() || !strings.HasSuffix(strings.ToLower(d.Name()), ".html") {
+		if d.IsDir() {
+			return nil
+		}
+
+		name := strings.ToLower(d.Name())
+		if !strings.HasSuffix(name, ".html") && !strings.HasSuffix(name, ".js") {
 			return nil
 		}
 
@@ -97,7 +103,12 @@ func rewriteHtmlPathsBasePath(rootDir, basePath string) (int, error) {
 		}
 
 		content := string(data)
-		rewritten := rewritePaths(content, prefix)
+		var rewritten string
+		if strings.HasSuffix(name, ".js") {
+			rewritten = rewriteJSPaths(content, prefix)
+		} else {
+			rewritten = rewritePaths(content, prefix)
+		}
 
 		if rewritten != content {
 			if err := os.WriteFile(path, []byte(rewritten), 0644); err != nil {
@@ -167,6 +178,7 @@ func rewritePaths(html, prefix string) string {
 	replacements := []struct{ old, new string }{
 		{`href="/`, `href="` + prefix},
 		{`src="/`, `src="` + prefix},
+		{`data-search-url="/`, `data-search-url="` + prefix},
 	}
 
 	for _, r := range replacements {
@@ -174,6 +186,23 @@ func rewritePaths(html, prefix string) string {
 	}
 
 	return html
+}
+
+// jsStrPathRe matches URL-like paths inside JS string literals.
+// Requires at least one '/' or '.' after the first path segment to distinguish
+// URL paths (/api/search.json, /scripts/app.js) from regex patterns (/"/g)
+// and HTML closing tags ('</mark>').
+var jsStrPathRe = regexp.MustCompile(`['"](/[a-zA-Z][a-zA-Z0-9_/-]*[/.][a-zA-Z0-9_/.-]+)['"]`)
+
+// rewriteJSPaths 将 JS 字符串中的根相对路径替换为带 prefix 的路径。
+// 使用正则匹配，避免误改 JS 正则字面量（如 /"/g）。
+func rewriteJSPaths(js, prefix string) string {
+	pathPrefix := strings.TrimRight(strings.TrimPrefix(prefix, "/"), "/")
+	return jsStrPathRe.ReplaceAllStringFunc(js, func(match string) string {
+		// match is like '/api/search.json' (with surrounding quotes)
+		// Insert prefix: '/api/search.json' → '/<prefix>/api/search.json'
+		return match[:2] + pathPrefix + match[1:]
+	})
 }
 
 // copyDir 递归复制 src 目录内容到 dst（覆盖已有文件）

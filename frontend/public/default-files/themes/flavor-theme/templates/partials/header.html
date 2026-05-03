@@ -5,15 +5,15 @@
       {# ── Left: avatar + site name ── #}
       <div class="top-bar__left">
         {% if theme_config.siteLogo %}
-        <a href="{{ config.domain }}" class="site-avatar-link" aria-label="返回首页">
+        <a href="/" class="site-avatar-link" aria-label="返回首页">
           <img class="site-avatar" src="{{ theme_config.siteLogo }}" alt="{{ config.siteName }}" />
         </a>
         {% elif config.avatar %}
-        <a href="{{ config.domain }}" class="site-avatar-link" aria-label="返回首页">
+        <a href="/" class="site-avatar-link" aria-label="返回首页">
           <img class="site-avatar" src="{{ config.avatar }}" alt="{{ config.siteName }}" />
         </a>
         {% endif %}
-        <a href="{{ config.domain }}" class="site-name-link">{{ config.siteName }}</a>
+        <a href="/" class="site-name-link">{{ config.siteName }}</a>
       </div>
 
       {# ── Center: nav items (desktop + mobile dropdown) ── #}

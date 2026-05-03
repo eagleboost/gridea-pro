@@ -11,7 +11,18 @@
   'use strict';
 
   // -- Constants --------------------------------------------------------------
-  var SEARCH_JSON_URL = '/api/search.json';
+  // Read search URL from the data-search-url attribute on the overlay element.
+  // The HTML deployer rewrites data-search-url="/api/search.json" to include the basePath.
+  var SEARCH_JSON_URL = (function () {
+    var el = document.getElementById('searchOverlay');
+    if (el) {
+      var url = el.getAttribute('data-search-url');
+      if (url) return url;
+    }
+    return '/api/search.json';
+  })();
+  // Derive base path prefix for result links (e.g. "/lCdMu.../随笔" or "")
+  var SITE_BASE = SEARCH_JSON_URL.replace(/\/api\/search\.json$/, '');
   var DEBOUNCE_MS = 150;
   var EXCERPT_RADIUS = 40;   // chars each side of match (~80 total)
   var ACTIVE_CLASS = 'is-active';
@@ -87,7 +98,7 @@
         }
         tagsHTML += '</div>';
       }
-      html += '<a class="search-result-item" href="' + esc(p.link) + '"'
+      html += '<a class="search-result-item" href="' + SITE_BASE + esc(p.link) + '"'
         + ' role="option" aria-selected="false">'
         + '<div class="search-result-item__title">' + esc(p.title) + ' <span class="search-arrow">→</span></div>'
         + '<div class="search-result-item__excerpt">' + esc((p.content || '').substring(0, 50) + ((p.content || '').length > 50 ? '...' : '')) + '</div>'
@@ -185,7 +196,7 @@
         }
         tagsHTML += '</div>';
       }
-      html += '<a class="search-result-item" href="' + esc(m.link) + '"'
+      html += '<a class="search-result-item" href="' + SITE_BASE + esc(m.link) + '"'
         + ' role="option" aria-selected="false">'
         + '<div class="search-result-item__title">' + m.titleHL + ' <span class="search-arrow">→</span></div>'
         + '<div class="search-result-item__excerpt">' + m.excerptHL + '</div>'
