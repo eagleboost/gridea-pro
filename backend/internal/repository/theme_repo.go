@@ -130,6 +130,15 @@ func (r *themeRepository) GetConfig(ctx context.Context) (domain.ThemeConfig, er
 	return *r.configCache, nil
 }
 
+// Invalidate 清除内存缓存，下次访问时从磁盘重新加载
+func (r *themeRepository) Invalidate() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.configCache = nil
+	r.configLoaded = false
+	r.configModTime = 0
+}
+
 func (r *themeRepository) SaveConfig(ctx context.Context, config domain.ThemeConfig) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -141,5 +150,9 @@ func (r *themeRepository) SaveConfig(ctx context.Context, config domain.ThemeCon
 
 	r.configCache = &config
 	r.configLoaded = true
+	// 更新 configModTime，避免 loadConfigIfNeeded 不必要地从磁盘重读
+	if info, err := os.Stat(configPath); err == nil {
+		r.configModTime = info.ModTime().UnixNano()
+	}
 	return nil
 }

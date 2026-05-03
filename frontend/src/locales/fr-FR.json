@@ -468,7 +468,15 @@
             "vercelDesc": "Réseau edge, idéal pour le frontend",
             "giteeDesc": "Accès rapide en Chine",
             "codingDesc": "Tencent Cloud, stable en Chine",
-            "sftpDesc": "Déployez sur votre propre serveur"
+            "sftpDesc": "Déployez sur votre propre serveur",
+            "directoryName": "Répertoire",
+            "directoryDesc": "Sortie vers un répertoire local, navigable via file://",
+            "outputDir": "Répertoire de sortie",
+            "selectOutputDir": "Sélectionner le répertoire de sortie",
+            "directoryNote": "Sélectionnez un répertoire local. Les fichiers du site y seront copiés. Les liens utilisent des chemins relatifs (./) pour la navigation file:///.",
+            "basePath": "Chemin de base du site",
+            "basePathPlaceholder": "/GrideaPro/",
+            "basePathHint": "Pour l'hébergement CDN en sous-répertoire (ex: pCloud). Utilise un préfixe absolu si renseigné. Laisser vide pour les chemins relatifs (file:/// compatible)."
         },
         "system": {
             "displayLanguage": "Langue d'affichage",

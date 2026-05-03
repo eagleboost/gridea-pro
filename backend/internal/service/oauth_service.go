@@ -126,7 +126,7 @@ func (s *OAuthService) RevokeToken(ctx context.Context, providerID string) error
 
 // GetAllStatuses 获取所有平台的连接状态
 func (s *OAuthService) GetAllStatuses(ctx context.Context) map[string]PlatformStatus {
-	platforms := []string{"github", "netlify", "vercel", "gitee", "coding", "sftp"}
+	platforms := []string{"github", "netlify", "vercel", "gitee", "coding", "sftp", "directory"}
 	result := make(map[string]PlatformStatus, len(platforms))
 	for _, p := range platforms {
 		result[p] = s.getStatus(p)
@@ -193,6 +193,22 @@ func (s *OAuthService) IsOAuthAvailable(providerID string) bool {
 // ─── Private ──────────────────────────────────────────────────────────────
 
 func (s *OAuthService) getStatus(providerID string) PlatformStatus {
+	// directory 平台：无凭证，根据配置中是否有 outputDir 判断连接状态
+	if providerID == "directory" {
+		s.settingMu.RLock()
+		repo := s.settingRepo
+		s.settingMu.RUnlock()
+		if repo != nil {
+			setting, err := repo.GetSetting(context.Background())
+			if err == nil {
+				if outputDir := setting.GetFrom("directory", "outputDir"); outputDir != "" {
+					return PlatformStatus{Connected: true, ConnectedVia: "manual"}
+				}
+			}
+		}
+		return PlatformStatus{Connected: false}
+	}
+
 	fields := getAllCredentialFields(providerID)
 	hasAny := false
 	for _, f := range fields {
@@ -319,12 +335,13 @@ func (s *OAuthService) runCallbackServer(ctx context.Context, listener net.Liste
 
 // sensitiveFieldsByPlatform 同 domain.SensitiveFields，此处冗余以避免包循环引用
 var sensitiveFieldsByPlatform = map[string][]string{
-	"github":  {"token"},
-	"gitee":   {"token"},
-	"coding":  {"token"},
-	"netlify": {"netlifyAccessToken"},
-	"vercel":  {"token"},
-	"sftp":    {"password", "privateKey"},
+	"github":    {"token"},
+	"gitee":     {"token"},
+	"coding":    {"token"},
+	"netlify":   {"netlifyAccessToken"},
+	"vercel":    {"token"},
+	"sftp":      {"password", "privateKey"},
+	"directory": {},
 }
 
 func getAllCredentialFields(providerID string) []string {

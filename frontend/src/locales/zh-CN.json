@@ -469,7 +469,15 @@
       "vercelDesc": "边缘网络加速，前端部署首选",
       "giteeDesc": "国内访问速度更快，无需代理",
       "codingDesc": "腾讯旗下，国内稳定访问",
-      "sftpDesc": "直接部署到你自己的服务器"
+      "sftpDesc": "直接部署到你自己的服务器",
+      "directoryName": "目录",
+      "directoryDesc": "输出到本地目录，支持通过 file:// 协议浏览",
+      "outputDir": "输出目录",
+      "selectOutputDir": "选择输出目录",
+      "directoryNote": "选择一个本地目录，部署时将站点文件复制到该目录。生成的链接使用相对路径，可通过 file:/// 直接浏览。",
+      "basePath": "站点基础路径",
+      "basePathPlaceholder": "/GrideaPro/",
+      "basePathHint": "用于 CDN 子目录场景（如 pCloud），设置后使用绝对路径前缀。留空则使用相对路径（file:/// 兼容）。"
     },
     "system": {
       "displayLanguage": "显示语言",

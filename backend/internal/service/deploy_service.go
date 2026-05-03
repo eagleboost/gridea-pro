@@ -126,6 +126,8 @@ func (s *DeployService) DeployToRemote(ctx context.Context) error {
 		} else {
 			provider = deploy.NewSftpProvider()
 		}
+	case "directory":
+		provider = deploy.NewDirProvider()
 	default:
 		provider = deploy.NewGitProvider()
 	}

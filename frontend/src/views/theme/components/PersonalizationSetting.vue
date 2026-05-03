@@ -262,6 +262,12 @@ const saveTheme = async () => {
   try {
     await SaveThemeConfigFromFrontend(themeConfig)
 
+    // 同步更新 store，防止后续保存操作覆盖
+    siteStore.themeConfig = {
+      ...siteStore.themeConfig,
+      ...form,
+    }
+
     toast.success(t('settings.theme.configSaved'))
     ga('Theme', 'Theme - save', form.themeName)
 

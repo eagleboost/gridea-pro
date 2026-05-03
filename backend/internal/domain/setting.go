@@ -27,7 +27,8 @@ var SensitiveFields = map[string][]string{
 	"coding":  {"token"},
 	"netlify": {"netlifyAccessToken"},
 	"vercel":  {"token"},
-	"sftp":    {"password", "privateKey"},
+	"sftp":      {"password", "privateKey"},
+	"directory": {},
 }
 
 // ExtractSensitiveFields 从 PlatformConfigs 中提取敏感字段
@@ -88,7 +89,8 @@ var platformFieldOrder = map[string][]string{
 	"coding":  {"domain", "repository", "branch", "username", "email", "tokenUsername", "token", "cname"},
 	"netlify": {"domain", "netlifySiteId", "netlifyAccessToken"},
 	"vercel":  {"domain", "repository", "token", "cname"},
-	"sftp":    {"domain", "transferProtocol", "server", "port", "username", "password", "privateKey", "remotePath"},
+	"sftp":      {"domain", "transferProtocol", "server", "port", "username", "password", "privateKey", "remotePath"},
+	"directory": {"outputDir", "basePath"},
 }
 
 // MarshalJSON 自定义 JSON 序列化，确保平台配置项按前端表单顺序输出
@@ -275,6 +277,16 @@ func (s *Setting) RemotePath() string { return s.Get("remotePath") }
 
 // TransferProtocol 当前平台的传输协议（sftp 或 ftp）
 func (s *Setting) TransferProtocol() string { return s.Get("transferProtocol") }
+
+// OutputDir 当前平台的目标输出目录（directory 部署使用）
+func (s *Setting) OutputDir() string { return s.Get("outputDir") }
+
+// BasePath 站点基础路径（如 /GrideaPro/），用于 CDN 子目录场景
+// 设置后部署时使用绝对路径前缀，未设置则使用相对路径（file:/// 兼容）
+func (s *Setting) BasePath() string { return s.Get("basePath") }
+
+// IsLocalDeploy 是否为本地目录部署模式（决定是否使用相对路径 ./）
+func (s *Setting) IsLocalDeploy() bool { return s.Platform == "directory" }
 
 // Validate 校验配置数据
 func (s *Setting) Validate() error {

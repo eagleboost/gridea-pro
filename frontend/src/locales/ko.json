@@ -468,7 +468,15 @@
             "vercelDesc": "엣지 네트워크, 프론트엔드 최적",
             "giteeDesc": "중국 내 빠른 접속",
             "codingDesc": "Tencent Cloud, 중국 내 안정적",
-            "sftpDesc": "자체 서버에 직접 배포"
+            "sftpDesc": "자체 서버에 직접 배포",
+            "directoryName": "디렉토리",
+            "directoryDesc": "로컬 디렉토리에 출력, file:// 프로토콜로 탐색 가능",
+            "outputDir": "출력 디렉토리",
+            "selectOutputDir": "출력 디렉토리 선택",
+            "directoryNote": "로컬 디렉토리를 선택하세요. 사이트 파일이 복사됩니다. 상대 경로(./)가 사용되어 file:/// 로 직접 탐색할 수 있습니다.",
+            "basePath": "사이트 기본 경로",
+            "basePathPlaceholder": "/GrideaPro/",
+            "basePathHint": "CDN 서브디렉토리(pCloud 등)용. 설정 시 절대 경로 접두사 사용. 비워두면 상대 경로(file:/// 호환)."
         },
         "system": {
             "displayLanguage": "표시 언어",

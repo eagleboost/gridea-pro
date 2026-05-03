@@ -425,6 +425,28 @@
             </FormField>
           </template>
 
+          <!-- ─ Directory（本地目录） ─ -->
+          <template v-if="drawerPlatform === 'directory'">
+            <div class="flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2.5">
+              <InformationCircleIcon class="size-4 flex-shrink-0 mt-0.5" />
+              {{ t('settings.network.directoryNote') }}
+            </div>
+            <FormField :label="t('settings.network.outputDir')">
+              <div class="flex gap-2">
+                <Input v-model="drawerForm.outputDir" class="flex-1" readonly
+                  :placeholder="t('settings.network.selectOutputDir')" />
+                <Button variant="outline" size="icon" @click="selectOutputDir">
+                  <FolderOpenIcon class="size-4" />
+                </Button>
+              </div>
+            </FormField>
+            <FormField :label="t('settings.network.basePath')">
+              <Input v-model="drawerForm.basePath"
+                :placeholder="t('settings.network.basePathPlaceholder')" />
+              <p class="text-[11px] text-muted-foreground mt-1">{{ t('settings.network.basePathHint') }}</p>
+            </FormField>
+          </template>
+
           <!-- ─ 代理设置（所有平台通用） ─ -->
           <div class="mt-2 pt-4 border-t border-border/50">
             <div class="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
@@ -487,7 +509,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { EventsEmit, EventsOn, BrowserOpenURL } from '@/wailsjs/runtime'
 import { SaveSettingFromFrontend, RemoteDetectFromFrontend } from '@/wailsjs/go/facade/SettingFacade'
 import { GetAllStatuses, StartOAuthFlow, RevokeToken, HasCredential, CancelOAuthFlow } from '@/wailsjs/go/facade/OAuthFacade'
-import { OpenKeyFileDialog } from '@/wailsjs/go/app/App'
+import { OpenKeyFileDialog, OpenFolderDialog } from '@/wailsjs/go/app/App'
 import { domain } from '@/wailsjs/go/models'
 
 // 本地类型定义（避免依赖 wails 自动生成的 models.ts 中可能被覆盖的 service namespace）
@@ -511,6 +533,7 @@ const GiteeIcon = { template: `<svg viewBox="0 0 24 24" fill="currentColor"><pat
 const CodingIcon = { template: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm4.5 16.5h-9a1.5 1.5 0 0 1 0-3h9a1.5 1.5 0 0 1 0 3zm0-4.5h-9a1.5 1.5 0 0 1 0-3h9a1.5 1.5 0 0 1 0 3z"/></svg>` }
 const ServerIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><rect x="2" y="10" width="20" height="5" rx="1"/><rect x="2" y="17" width="20" height="5" rx="1"/><circle cx="6" cy="5.5" r=".8" fill="currentColor"/><circle cx="6" cy="12.5" r=".8" fill="currentColor"/></svg>` }
 const BranchIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>` }
+const DirIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>` }
 
 // hasOAuth: 该平台是否支持 OAuth（始终显示授权按钮，不依赖后端 client ID 是否配置）
 const platforms = computed(() => [
@@ -520,6 +543,7 @@ const platforms = computed(() => [
   { id: 'gitee', name: 'Gitee Pages', color: '#c71d23', icon: GiteeIcon, hasOAuth: true, profileUrl: 'https://gitee.com/', description: t('settings.network.giteeDesc') },
   { id: 'coding', name: 'Coding Pages', color: '#0066ff', icon: CodingIcon, hasOAuth: false, profileUrl: '', description: t('settings.network.codingDesc') },
   { id: 'sftp', name: 'SFTP / FTP', color: '#5856d6', icon: ServerIcon, hasOAuth: false, profileUrl: '', description: t('settings.network.sftpDesc') },
+  { id: 'directory', name: t('settings.network.directoryName'), color: '#f59e0b', icon: DirIcon, hasOAuth: false, profileUrl: '', description: t('settings.network.directoryDesc') },
 ])
 
 // ── 状态 ──────────────────────────────────────────────────────────────────
@@ -560,6 +584,8 @@ const drawerForm = reactive<Record<string, any>>({
   netlifySiteId: '',
   proxyEnabled: false,
   proxyURL: '',
+  outputDir: '',
+  basePath: '',
 })
 
 // ── 计算属性 ──────────────────────────────────────────────────────────────
@@ -594,6 +620,8 @@ const activeConfigItems = computed(() => {
     if (d) items.push({ icon: GlobeAltIcon, value: d })
     const addr = [cfg.server, cfg.port].filter(Boolean).join(':')
     if (addr) items.push({ icon: ServerStackIcon, value: addr })
+  } else if (pid === 'directory') {
+    if (cfg.outputDir) items.push({ icon: FolderOpenIcon, value: String(cfg.outputDir) })
   }
 
   return items
@@ -792,6 +820,11 @@ async function selectKeyFile() {
   if (filePath) drawerForm.privateKey = filePath
 }
 
+async function selectOutputDir() {
+  const dirs = await OpenFolderDialog()
+  if (dirs && dirs.length > 0) drawerForm.outputDir = dirs[0]
+}
+
 function hasExistingCredential(platform: string, field: string): boolean {
   return statuses.value[platform]?.connected ?? false
 }
@@ -913,6 +946,8 @@ function getCardItems(platformId: string): { icon: any; value: string }[] {
     items.push({ icon: CodeBracketIcon, value: cfg.repository })
   } else if (platformId === 'sftp' && cfg.server) {
     items.push({ icon: ServerStackIcon, value: `${cfg.server}${cfg.port ? ':' + cfg.port : ''}` })
+  } else if (platformId === 'directory' && cfg.outputDir) {
+    items.push({ icon: FolderOpenIcon, value: String(cfg.outputDir) })
   }
   return items
 }
@@ -931,6 +966,7 @@ function buildSettingForPlatform(platformId: string) {
     netlify: ['domain', 'netlifySiteId', 'netlifyAccessToken'],
     vercel: ['domain', 'repository', 'token', 'cname'],
     sftp: ['domain', 'transferProtocol', 'server', 'port', 'username', 'password', 'privateKey', 'remotePath'],
+    directory: ['outputDir', 'basePath'],
   }
 
   const fields = platformFieldMap[platformId] || []

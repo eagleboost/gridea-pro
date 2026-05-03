@@ -370,6 +370,7 @@ const saveThemeCustomConfig = async () => {
     await SaveThemeCustomConfigFromFrontend(form)
     siteStore.site.themeCustomConfig = { ...form }
     toast.success(t('settings.theme.configSaved'))
+    EventsEmit('app-site-reload')
   } catch (e) {
     console.error(e)
     toast.error(t('settings.theme.saveFailed'))

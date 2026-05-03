@@ -154,7 +154,7 @@ func (s *Engine) SetTheme(themeName string) error {
 	return nil
 }
 
-// RenderAll 对外的渲染入口，提供 single-flight + coalesce 并发语义。
+// RenderAll 执行一次完整渲染（自动合并并发请求）
 //
 // 模式说明（经典的"pending 位 + Swap"合并模式）：
 //  1. 进入时先把 pending 置 1，表示"我需要一次渲染覆盖我"

@@ -468,7 +468,15 @@
             "vercelDesc": "エッジネットワーク、フロントエンド向け",
             "giteeDesc": "中国国内で高速アクセス",
             "codingDesc": "Tencent Cloud、中国国内で安定",
-            "sftpDesc": "自分のサーバーに直接デプロイ"
+            "sftpDesc": "自分のサーバーに直接デプロイ",
+            "directoryName": "ディレクトリ",
+            "directoryDesc": "ローカルディレクトリに出力し、file:// プロトコルで閲覧可能",
+            "outputDir": "出力ディレクトリ",
+            "selectOutputDir": "出力ディレクトリを選択",
+            "directoryNote": "ローカルディレクトリを選択してください。サイトファイルがコピーされます。相対パス(./)が使用され、file:/// で直接閲覧できます。",
+            "basePath": "サイトベースパス",
+            "basePathPlaceholder": "/GrideaPro/",
+            "basePathHint": "CDN サブディレクトリ（pCloud など）用。設定すると絶対パスプレフィックスを使用。空にすると相対パス（file:/// 互換）。"
         },
         "system": {
             "displayLanguage": "表示言語",

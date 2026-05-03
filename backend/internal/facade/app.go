@@ -63,6 +63,7 @@ type AppServices struct {
 		Link     domain.LinkRepository
 		Memo     domain.MemoRepository
 		Setting  domain.SettingRepository
+		Theme    domain.ThemeRepository
 	}
 	assets embed.FS // Keep reference for UpdateAppDir
 }
@@ -199,6 +200,7 @@ func NewAppServices(appDir string, assets embed.FS) *AppServices {
 			Link     domain.LinkRepository
 			Memo     domain.MemoRepository
 			Setting  domain.SettingRepository
+			Theme    domain.ThemeRepository
 		}{
 			Category: categoryRepo,
 			Tag:      tagRepo,
@@ -207,6 +209,7 @@ func NewAppServices(appDir string, assets embed.FS) *AppServices {
 			Link:     linkRepo,
 			Memo:     memoRepo,
 			Setting:  settingRepo,
+			Theme:    themeRepo,
 		},
 		assets: assets,
 	}
@@ -222,6 +225,7 @@ func (s *AppServices) InvalidateAllCaches() {
 		s.Repositories.Link,
 		s.Repositories.Memo,
 		s.Repositories.Setting,
+		s.Repositories.Theme,
 	}
 	for _, r := range repos {
 		if inv, ok := r.(invalidatable); ok {
@@ -259,6 +263,7 @@ func (s *AppServices) UpdateAppDir(appDir string) {
 	s.AI.service = newServices.AI.service
 	// OAuth 服务是应用级单例（跨站点共享 Keychain 状态），但代理配置要跟随
 	// 当前站点——切站时更新其 settingRepo 指针
+	s.Repositories.Theme = newServices.Repositories.Theme
 	s.OAuth.service.SetSettingRepo(newServices.Repositories.Setting)
 	// Scaffold service doesn't need update generally, but good to keep in sync
 	s.Services.Scaffold = newServices.Services.Scaffold

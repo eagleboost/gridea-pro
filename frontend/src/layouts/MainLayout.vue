@@ -290,6 +290,7 @@ import { useSiteStore } from '@/stores/site'
 import AppSystem from '@/views/preferences/index.vue'
 import { Button } from '@/components/ui/button'
 import { EventsEmit, EventsOn, BrowserOpenURL } from '@/wailsjs/runtime'
+import { LoadSite } from '@/wailsjs/go/app/App'
 import { DeployToGit } from '@/wailsjs/go/facade/DeployFacade'
 import {
   CheckUpdate,
@@ -665,8 +666,14 @@ onMounted(() => {
     publish()
   })
 
-  // Initial site load request
-  EventsEmit('app-ready')
+  // Initial site load: directly call LoadSite() instead of relying on event round-trip
+  // to avoid race condition where backend hasn't registered app-ready handler yet
+  LoadSite().then((result: any) => {
+    console.log('initial LoadSite', result)
+    siteStore.updateSite(result)
+  }).catch((e: any) => {
+    console.error('Initial LoadSite failed:', e)
+  })
 
   // 启动后尝试检查更新：有新版本且不是已跳过的版本时自动弹窗
   checkUpdate({ autoOpen: true })

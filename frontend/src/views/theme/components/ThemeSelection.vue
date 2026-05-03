@@ -253,6 +253,11 @@ const useTheme = async (theme: any) => {
 
   try {
     await SaveThemeConfigFromFrontend(form)
+    // 同步更新 store，防止后续保存操作覆盖
+    siteStore.themeConfig = {
+      ...siteStore.themeConfig,
+      themeName: theme.folder
+    }
     toast.success(t('settings.theme.configSaved'))
     EventsEmit('app-site-reload')
   } catch (e) {

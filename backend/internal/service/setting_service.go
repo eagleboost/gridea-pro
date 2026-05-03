@@ -299,6 +299,37 @@ func (s *SettingService) RemoteDetect(ctx context.Context, setting domain.Settin
 			message = "SFTP 连接成功"
 		}
 
+	case "directory":
+		outputDir := setting.OutputDir()
+		if outputDir == "" {
+			message = "输出目录未配置"
+			break
+		}
+		info, err := os.Stat(outputDir)
+		if err != nil {
+			if os.IsNotExist(err) {
+				message = fmt.Sprintf("目录不存在: %s", outputDir)
+			} else {
+				message = fmt.Sprintf("无法访问目录: %v", err)
+			}
+			break
+		}
+		if !info.IsDir() {
+			message = fmt.Sprintf("路径不是目录: %s", outputDir)
+			break
+		}
+		// 尝试创建临时文件验证可写
+		testFile := filepath.Join(outputDir, ".gridea-test")
+		if f, err := os.Create(testFile); err != nil {
+			message = fmt.Sprintf("目录不可写: %v", err)
+			break
+		} else {
+			f.Close()
+			os.Remove(testFile)
+		}
+		success = true
+		message = "目录连接成功"
+
 	default:
 		message = "不支持的平台类型"
 	}

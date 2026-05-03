@@ -468,7 +468,15 @@
             "vercelDesc": "邊緣網路加速，前端部署首選",
             "giteeDesc": "中國境內存取速度更快，無需代理",
             "codingDesc": "騰訊旗下，中國境內穩定存取",
-            "sftpDesc": "直接部署到你自己的伺服器"
+            "sftpDesc": "直接部署到你自己的伺服器",
+            "directoryName": "目錄",
+            "directoryDesc": "輸出到本地目錄，支援透過 file:// 協定瀏覽",
+            "outputDir": "輸出目錄",
+            "selectOutputDir": "選擇輸出目錄",
+            "directoryNote": "選擇一個本地目錄，部署時將網站檔案複製到該目錄。產生的連結使用相對路徑，可透過 file:/// 直接瀏覽。",
+            "basePath": "站點基礎路徑",
+            "basePathPlaceholder": "/GrideaPro/",
+            "basePathHint": "用於 CDN 子目錄場景（如 pCloud），設定後使用絕對路徑前綴。留空則使用相對路徑（file:/// 相容）。"
         },
         "system": {
             "displayLanguage": "顯示語言",

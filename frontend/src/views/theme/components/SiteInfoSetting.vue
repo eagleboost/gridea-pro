@@ -203,6 +203,16 @@ const saveTheme = async () => {
 
   try {
     await SaveThemeConfigFromFrontend(fullConfig)
+    // 同步更新 store，防止后续保存操作覆盖
+    siteStore.themeConfig = {
+      ...siteStore.themeConfig,
+      siteName: form.siteName,
+      siteAuthor: form.siteAuthor,
+      siteEmail: form.siteEmail,
+      language: form.siteLanguage,
+      siteDescription: form.siteDescription,
+      footerInfo: form.footerInfo,
+    }
     toast.success(t('settings.theme.configSaved'))
     ga('Theme', 'SiteInfo - save', form.siteName)
     EventsEmit('app-site-reload')
